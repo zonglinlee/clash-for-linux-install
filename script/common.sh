@@ -47,7 +47,7 @@ _set_var() {
         SHELL_RC="${home}/.zshrc"
     }
 
-    # 定时任务路径
+    # 定时任务路径  操作系统判定   grep E flag (regular expression)
     local os_info=$(cat /etc/os-release)
     echo "$os_info" | grep -iqsE "rhel|centos" && CLASH_CRON_TAB="/var/spool/cron/$user"
     echo "$os_info" | grep -iqsE "debian|ubuntu" && CLASH_CRON_TAB="/var/spool/cron/crontabs/$user"
@@ -102,6 +102,7 @@ function _get_kernel() {
     }
 
     [ ! -f "$ZIP_MIHOMO" ] && [ ! -f "$ZIP_CLASH" ] && {
+        # 获取cpu架构，下载相应的安装包
         local arch=$(uname -m)
         _failcat "${ZIP_BASE_DIR}：未检测到可用的内核压缩包"
         _download_clash "$arch"
@@ -116,6 +117,7 @@ function _get_kernel() {
 _get_random_port() {
     local randomPort=$(shuf -i 1024-65535 -n 1)
     ! _is_bind "$randomPort" && { echo "$randomPort" && return; }
+    # 如果当前生成的端口已被占用，则递归调用 _get_random_port，重新生成一个随机端口
     _get_random_port
 }
 
@@ -222,7 +224,7 @@ function _valid_config() {
         }
     }
 }
-
+# 架构判断 并下载相应的 clash 版本
 _download_clash() {
     local arch=$1
     local url sha256sum
